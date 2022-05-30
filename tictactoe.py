@@ -1,4 +1,5 @@
 #imports
+from operator import index
 from ssl import HAS_TLSv1_1
 from zlib import Z_BLOCK
 from cmu_graphics import *
@@ -12,19 +13,22 @@ hit = makeList(app.row, app.col)
 Turn = []
 test = open("empty.txt", "r")
 empty= list(test.read().split())
-em = []
-app.avalue = 0
-app.bvalue = 0
-for i in empty:
-    x, y = i.replace('[','').replace(']','').split(',')
-    x = int(x)
-    y = int(y)
-    print(x, y)
-    em.append([x, y])
+Boardstate = []
+app.win = False
+
+#app.avalue = 0
+#app.bvalue = 0
+#for i in empty:
+#    x, y = i.replace('[','').replace(']','').split(',')
+#    print(y)
+##    x = int(x)
+ #   y = int(y)
+ #  print(x, y)
+ #   em.append([x, y])
 
 
-print(empty)
-print(em)
+#print(empty)
+#print(em)
 
 
 
@@ -42,6 +46,7 @@ def pickai():
     #clear the board
     Turn.clear()
     #varibles
+    points = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     a = -1
     b = -1
         #add all position the computer can choice to Turn
@@ -52,14 +57,91 @@ def pickai():
             if board[row][col].value == "":
                 Turn.append([row, col])
     
-    if len(Turn) == 9:
-        a, b  = choice(em)
-        app.bvalue = b
-        app.avalue = a
-        print(a)
+    file = open("data.txt", "r")
+    line_count = 0
+    for coun in enumerate(file):
+        line_count += 1
+    file.close()
+    
+    data = open("data.txt", "r")
+    
+        
+    content = data.readlines()
+    for i in range(line_count):
+        a = content[i]
+        x = a.replace('[','').replace(']','').replace(",", "").replace(" ","")
+        print(x)
+        
+        if x[0] == "w":
+            for i in range(9):
+                if x[4 + i * 3] == "O":
+                    points[i] += 1
+        
+        if x[0] == "l":
+            for i in range(9):
+                if x[5 + i * 3] == "O":
+                    points[i] -= 1
+    
+            
+            
+        
+    print(points)
+     
+   
+    
+    
+    for i in range(9):
+        
+        bignumber = points[0]
 
-    else:
-        a, b = choice(Turn)
+        for i in points:
+            if i > bignumber:
+                bignumber = i
+        
+        Indexa = points.index(bignumber)
+        print(Indexa)
+    
+        if Indexa == 0 and board[0][0].value == "":
+            a = 0
+            b = 0
+            break
+        elif Indexa == 1 and board[1][0].value == "":
+            a = 1
+            b = 0
+            break
+        elif Indexa == 2 and board[2][0].value == "":
+            a = 2
+            b = 0
+            break
+        elif Indexa == 3 and board[0][1].value == "":
+            a = 0
+            b = 1
+            break
+        elif Indexa == 4 and board[1][1].value == "":
+            a = 1
+            b = 1
+            break
+        elif Indexa == 5 and board[2][1].value == "":
+            a = 2
+            b = 1
+            break
+        elif Indexa == 6 and board[0][2].value == "":
+            a = 0
+            b = 2
+            break
+        elif Indexa == 7 and board[1][2].value == "":
+            a = 1
+            b = 2
+            break
+        elif Indexa == 8 and board[2][2].value == "":
+            a = 2
+            b = 2
+            break
+        else:
+            points[Indexa] = -1000000000
+            print("aaaaaaaaaaa", points)
+        
+    
     #place O                                          
     if a > -1:
         board[a][b].value = "O"
@@ -69,19 +151,56 @@ def pickai():
 #draw win or lose rect         
 def loeseorwin(lorw):
     if lorw  == "win":
+        app.win = True
         Rect(50,50,300,300,fill = "green", opacity = 75)
         Label("You Win!!", 200, 200, size = 50)
+         
+        test = open("data.txt", "a")
+        for row in range(3):
+            for col in range(3):
+                z = board[row][col].value 
+                if z  == "":
+                    Boardstate.append("-")
+                else:   
+                    Boardstate.append(z)
+        
+
+        test.write("lose "  + str(Boardstate) + "\n")
+        
+        app.stop()
     elif lorw == "draw":
         Rect(50,50,300,300,fill = "yellow", opacity = 75)
         Label("Draw", 200, 200, size = 50)
         app.stop()
+
+        test = open("data.txt", "a")
+        for row in range(3):
+            for col in range(3):
+                z = board[row][col].value 
+                if z  == "":
+                    Boardstate.append("-")
+                else:   
+                    Boardstate.append(z)
+        
+
+        test.write("draw " + str(Boardstate) + "\n")
     else:
         Rect(50,50,300,300,fill = "red", opacity = 75)
         Label("You lose", 200, 200, size = 50)
-        em.append([app.avalue, app.bvalue])
-        test = open("empty.txt", "w")
-        test.write(str(em))
-        app.stop()
+
+        test = open("data.txt", "a")
+        for row in range(3):
+            for col in range(3):
+                z = board[row][col].value 
+                if z  == "":
+                    Boardstate.append("-")
+                else:   
+                    Boardstate.append(z)
+        
+        
+
+        test.write("win< " + str(Boardstate) + "\n")
+       
 
         app.stop()
 
@@ -169,7 +288,6 @@ def onMousePress(x, y):
     
     #call functionc
     checkwin()
-
     #count player move to rounds
     app.round += 1
     
@@ -178,12 +296,15 @@ def onMousePress(x, y):
         pickai()
     
     #call lose function
-    checklose()
+
+    if app.win == False:
+        checklose()
     
     #count computer move to round
     app.round += 1
 
 def onStep():
     checkdraw()
+   
 
 cmu_graphics.run()
