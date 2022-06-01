@@ -1,6 +1,7 @@
 #imports
 from operator import index
 from ssl import HAS_TLSv1_1
+from tokenize import group
 from zlib import Z_BLOCK
 from cmu_graphics import *
 
@@ -16,6 +17,10 @@ empty= list(test.read().split())
 Boardstate = []
 app.win = False
 app.player = 2
+back = Rect(50, 50, 300, 300, fill = None, opacity = 70)
+text = Label("", 200, 200, size = 50)
+text2 = Label("", 200, 250)
+Label("Press c to enable training",200, 25)
 
 #app.avalue = 0
 #app.bvalue = 0
@@ -322,11 +327,18 @@ def pickai2():
 
 #draw win or lose rect         
 def loeseorwin(lorw):
+    
     Boardstate = []
     if lorw  == "win":
         app.win = True
-        #Rect(50,50,300,300,fill = "green", opacity = 75)
-        #Label("You Win!!", 200, 200, size = 50)
+        if app.player == 2:
+            back.toFront()
+            text2.toFront()
+            text.toFront()
+            back.fill = "green"
+            text.value = "You Win!!"
+            text2.value = "Press R to restart"
+            app.paused = True
          
         test = open("data.txt", "a")
         for row in range(3):
@@ -349,8 +361,14 @@ def loeseorwin(lorw):
         app.win = False
 
     elif lorw == "draw":
-        #Rect(50,50,300,300,fill = "yellow", opacity = 75)
-        #Label("Draw", 200, 200, size = 50)
+        if app.player == 2:
+            back.fill = "yellow"
+            text.value = "draw"
+            text2.value = "Press R to restart"
+            back.toFront()
+            text2.toFront()
+            text.toFront()
+            app.paused = True
         
 
         test = open("data.txt", "a")
@@ -373,13 +391,17 @@ def loeseorwin(lorw):
         app.round = 0
 
         app.win = False
-        
-
-        
+            
     else:
-        #Rect(50,50,300,300,fill = "red", opacity = 75)
-        #Label("You lose", 200, 200, size = 50)
-
+        if app.player == 2:
+            back.fill = "red"
+            text.value = "you lose"
+            text2.value = "Press R to restart"
+            back.toFront()
+            text2.toFront()
+            text.toFront()
+            app.paused = True
+        
         test = open("data.txt", "a")
         for row in range(3):
             for col in range(3):
@@ -468,11 +490,9 @@ def checklose():
     if board[0][2].value == "O" and board[1][1].value == "O" and board[2][0].value == "O":
         loeseorwin("lose")            
 
-
-
 #check draw
 def checkdraw():
-    if app.round > 8:
+    if app.round >= 9:
         loeseorwin("draw")
 
 pickai()
@@ -508,6 +528,15 @@ def onMousePress(x, y):
 def onKeyPress(key):
     if key == "c":
         app.player = 1
+    
+    if key == "r":
+        app.paused = False
+        back.fill = None
+        text.value = ""
+        text2.value = ""
+        if app.round == 0:
+            pickai()
+            app.round += 1
 
 def onStep():
     
